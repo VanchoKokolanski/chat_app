@@ -95,7 +95,7 @@
         background-color: rgba(224, 38, 38, 0.767);
       }
       &.logout{
-          background-color: rgba(76, 101, 243, 0.767);
+        background-color: #1a73e8;
       }
     }
   }
