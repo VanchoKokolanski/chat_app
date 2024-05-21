@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./chatList.css";
 import AddUser from "./addUser/AddUser";
 import { useUserStore } from "../../../lib/userStore";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 
 const ChatList = () => {
@@ -12,12 +12,23 @@ const ChatList = () => {
   const { currentUser } = useUserStore();
 
   useEffect(() => {
-    const unSub = onSnapshot(doc(db, "userchats", currentUser.id), async (res) => {
-      const items = res.data().chats;
+    const unSub = onSnapshot(
+      doc(db, "userchats", currentUser.id),
+      async (res) => {
+        const items = res.data().chats;
 
-      const promisses = items.map(() => {})
-      setChats(doc.data());
-    });
+        const promises = items.map(async (item) => {
+          const userDocRef = doc(db, "user", item.recevierId);
+          const userDocSnap = await getDoc(userDocRef);
+
+          const user = userDocSnap.data();
+
+          return { ...item, user };
+        });
+        const chatData = await Promise.all(promises);
+        setChats(chatData.sort((a, b) => b.updatedAt - a.updatedAt));
+      }
+    );
 
     return () => {
       unSub();
