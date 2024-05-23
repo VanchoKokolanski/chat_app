@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import "./chat.css";
 import EmojiPicker from "emoji-picker-react";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "./../../lib/firebase";
+import { useChatStore } from "../../lib/chatStore";
 
 const Chat = () => {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
+  const [chat, setChat] = useState([]);
+  const { chatId } = useChatStore();
 
   const endRef = useRef(null);
 
@@ -14,10 +19,23 @@ const Chat = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const unSub = onSnapshot(doc(db, "chats", chatId), (res) => {
+      setChat(res.data());
+    });
+
+    return () => {
+      unSub();
+    };
+  }, [chatId]);
+
   const handleEmoji = (e) => {
     setText((prevState) => prevState + e.emoji);
     setOpen(false);
   };
+
+  const handleSend = () => {};
+
   return (
     <div className="chat">
       <div className="top">
@@ -35,76 +53,15 @@ const Chat = () => {
         </div>
       </div>
       <div className="center">
-        <div className="message">
-          <img src="./avatar.png" alt="message" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-              aspernatur odit omnis ea. Dignissimos repellendus nemo, rem quasi
-              esse repellat. Cupiditate adipisci accusamus ea incidunt, maxime
-              sequi perspiciatis? Atque, similique.
-            </p>
-            <span>1 minute ago</span>
-          </div>
-        </div>
-        <div className="message own">
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-              aspernatur odit omnis ea. Dignissimos repellendus nemo, rem quasi
-              esse repellat. Cupiditate adipisci accusamus ea incidunt, maxime
-              sequi perspiciatis? Atque, similique.
-            </p>
-            <span>1 minute ago</span>
-          </div>
-        </div>
-        <div className="message">
-          <img src="./avatar.png" alt="message" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-              aspernatur odit omnis ea. Dignissimos repellendus nemo, rem quasi
-              esse repellat. Cupiditate adipisci accusamus ea incidunt, maxime
-              sequi perspiciatis? Atque, similique.
-            </p>
-            <span>1 minute ago</span>
-          </div>
-        </div>
-        <div className="message own">
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-              aspernatur odit omnis ea. Dignissimos repellendus nemo, rem quasi
-              esse repellat. Cupiditate adipisci accusamus ea incidunt, maxime
-              sequi perspiciatis? Atque, similique.
-            </p>
-            <span>1 minute ago</span>
-          </div>
-        </div>
-        <div className="message">
-          <img src="./avatar.png" alt="message" />
-          <div className="texts">
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-              aspernatur odit omnis ea. Dignissimos repellendus nemo, rem quasi
-              esse repellat. Cupiditate adipisci accusamus ea incidunt, maxime
-              sequi perspiciatis? Atque, similique.
-            </p>
-            <span>1 minute ago</span>
-          </div>
-        </div>
-        <div className="message own">
-          <div className="texts">
-            <img src="https://picsum.photos/id/27/200/300" alt="img" />
-            <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-              aspernatur odit omnis ea. Dignissimos repellendus nemo, rem quasi
-              esse repellat. Cupiditate adipisci accusamus ea incidunt, maxime
-              sequi perspiciatis? Atque, similique.
-            </p>
-            <span>1 minute ago</span>
-          </div>
-        </div>
+        {chat?.message?.map((message) => {
+          <div className="message own" key={message?.createdAt}>
+            <div className="texts">
+              {message.img && <img src={message.img} alt="imgMessage" />}
+              <p>{message.text}</p>
+              <span>1 minute ago</span>
+            </div>
+          </div>;
+        })}
         <div ref={endRef}></div>
       </div>
       <div className="bottom">
@@ -129,7 +86,9 @@ const Chat = () => {
             <EmojiPicker open={open} onEmojiClick={handleEmoji} />
           </div>
         </div>
-        <button className="sendButton">Send</button>
+        <button className="sendButton" onClick={handeleSend}>
+          Send
+        </button>
       </div>
     </div>
   );
