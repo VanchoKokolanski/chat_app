@@ -31,7 +31,6 @@ const AddUser = () => {
       const q = query(userRef, where("username", "==", username));
 
       const querySnapShot = await getDocs(q);
-
       if (!querySnapShot.empty) {
         setUser(querySnapShot.docs[0].data());
       }
