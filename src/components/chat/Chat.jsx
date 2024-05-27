@@ -135,6 +135,7 @@ const Chat = () => {
             </div>
           );
         })}
+        
         {img.url && (
           <div className="message own">
             <div className="texts">
